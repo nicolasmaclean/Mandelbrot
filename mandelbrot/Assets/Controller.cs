@@ -4,8 +4,9 @@ public class Controller : MonoBehaviour
 {
     public Material material;
     public Vector2 pos;
-    public float scale, angle, smoothLerp, red, green, blue, alpha, gradient;
-    public int maxIter;
+    public float scale, angle, smoothLerp, red, green, blue, alpha, gradient, repeat, speed;
+    public int maxIter, mode;
+    public bool smoothBool, leavesBool;
 
     private Vector2 smoothPos;
     private float smoothScale, smoothAngle;
@@ -38,6 +39,12 @@ public class Controller : MonoBehaviour
             pos += dir;
         else if(Input.GetKey(KeyCode.S))
             pos -= dir;
+
+        if(Input.GetKey(KeyCode.Backspace)) {
+            scale = 2.666666f;
+            pos.x = -.66666f; pos.y = 0;
+            angle = 0;
+        }
     }
     private void updateShader()
     {
@@ -58,7 +65,13 @@ public class Controller : MonoBehaviour
         material.SetVector("_Area", new Vector4(smoothPos.x, smoothPos.y, scaleX, scaleY));
         material.SetVector("_Color", new Vector4(red, green, blue, alpha));
         material.SetInt("_MaxIter", maxIter);
+        material.SetFloat("_Angle", angle);
         material.SetFloat("_Gradient", gradient%1);
+        material.SetFloat("_Repeat", repeat);
+        material.SetFloat("_Speed", speed);
+        material.SetInt("_Mode", mode);
+        material.SetInt("_SmoothBool", smoothBool ? 1 : 0);
+        material.SetInt("_LeavesBool", leavesBool ? 1 : 0);
     }
     
     void FixedUpdate()

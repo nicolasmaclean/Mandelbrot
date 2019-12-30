@@ -7,7 +7,12 @@
         _Color ("Color", vector) = (.3, .45, .65, 1)
         _Angle ("Angle", range(-3.1415, 3.1415)) = 0
         _MaxIter ("Max Iterations", range(4, 1000)) = 255
-        _Gradient ("Gradient", range(0, 1)) = .5
+        _Gradient ("Gradient", range(0, 1)) = .35
+        _Repeat("Repeat", float) = 1
+        _Speed("Speed", float) = 1
+        _Mode("Color Mode", range(0, 2)) = 1
+        _SmoothBool("Smooth Iteration", range(0, 1)) = 0
+        _LeavesBool("Leaves", range(0, 1)) = 1
     }
     SubShader
     {
@@ -43,7 +48,7 @@
             }
 
             float4 _Area, _Color;
-            float _Angle, _MaxIter, _Gradient;
+            float _Angle, _MaxIter, _Gradient, _Repeat, _Speed, _Mode, _SmoothBool, _LeavesBool;
             sampler2D _MainTex;
 
             float2 rotate(float2 p, float2 pivot, float a) {
@@ -62,18 +67,42 @@
                 float2 c = _Area.xy + (i.uv-.5)*_Area.zw;
                 c = rotate(c, _Area.xy, _Angle);
                 float2 z;
+                float2 zPrev;
                 float iter;
+                float r = 20;
+                float r2 = r * r;
 
                 for(iter = 0; iter < _MaxIter; iter++) {
+                    zPrev = z;
                     z = float2(z.x*z.x - z.y*z.y, 2*z.x*z.y) + c; // the first component of the float2 is the real part and the second is the imaginary part
-                    if(length(z) > 2) break;
+                    if(length(z) > r && _LeavesBool != 1) break;
+                    else if(dot(z, zPrev) > r) break;
                 }
+
+                if(iter >= _MaxIter) return 0; // the inside of the fractal will be black
+
+                float fracIter;
+                if(_SmoothBool == 1 || _LeavesBool) {
+                    float dist = length(z); // smooth iteration
+                    // fracIter = (dist - r) / (r2 - r); // linear interpolation
+                    fracIter = log2( log(dist) / log(r)); // exponential interpolation
+                    if(_SmoothBool == 1)
+                        iter -= fracIter;
+                }
+
 
                 float m = sqrt(iter/_MaxIter);
                 float4 color;
-                // color = float4(m, m, m, 1); // grayscale
-                // color = sin(_Color * m*20)*.5 + .5; // procedural
-                color = tex2D(_MainTex, float2(m, _Gradient)); // uses the gradient png to pick the color of each pixel
+
+                switch(_Mode) {
+                    default : color = float4(m, m, m, 1); break;
+                    case 0 : color = float4(m, m, m, 1); break; // grayscale
+                    case 1 : color = sin(_Color * m*20 + _Time.y*_Speed)*.5 + .5; break; // procedural
+                    case 2 : color = tex2D(_MainTex, float2(m * _Repeat + _Time.y*_Speed, _Gradient)); break; // uses the gradient png to pick the color of each pixel
+                }
+
+                if(_LeavesBool == 1)
+                    color *= smoothstep(3, 0, fracIter); // shadows on the leaves
 
                 return color;
             }

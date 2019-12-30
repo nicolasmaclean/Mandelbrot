@@ -263,7 +263,12 @@ MonoBehaviour:
   blue: 0.65
   alpha: 1
   gradient: 0.35
+  repeat: 1
+  speed: 1
   maxIter: 255
+  mode: 1
+  smoothBool: 0
+  leavesBool: 1
 --- !u!114 &710373160
 MonoBehaviour:
   m_ObjectHideFlags: 0
