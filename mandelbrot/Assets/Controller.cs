@@ -4,7 +4,7 @@ public class Controller : MonoBehaviour
 {
     public Material material;
     public Vector2 pos;
-    public float scale, angle, smoothLerp, red, green, blue, alpha;
+    public float scale, angle, smoothLerp, red, green, blue, alpha, gradient;
     public int maxIter;
 
     private Vector2 smoothPos;
@@ -58,6 +58,7 @@ public class Controller : MonoBehaviour
         material.SetVector("_Area", new Vector4(smoothPos.x, smoothPos.y, scaleX, scaleY));
         material.SetVector("_Color", new Vector4(red, green, blue, alpha));
         material.SetInt("_MaxIter", maxIter);
+        material.SetFloat("_Gradient", gradient%1);
     }
     
     void FixedUpdate()
